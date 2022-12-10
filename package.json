@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "backend server for pkk system",
   "main": "server.js",
+  "type": "module",
   "engines": {
     "node": "14.x"
   },
