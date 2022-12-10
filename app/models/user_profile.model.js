@@ -1,12 +1,13 @@
 const mongoose = require("mongoose");
 
-const User = mongoose.model(
-  "User",
+const UserProfile = mongoose.model(
+  "User Profile",
   new mongoose.Schema({
-    username: String,
-    email: String,
-    password: String,
-    user_profile: { type: mongoose.Types.ObjectId, ref: "User Profile" },
+    user_id: { type: mongoose.Types.ObjectId, ref: "User" },
+    subscription_code: Number,
+    name: String,
+    phone_number: String,
+    address: String,
     created_by: { type: mongoose.Types.ObjectId, ref: "User" },
     created_on: Number,
     deleted_by: { type: mongoose.Types.ObjectId, ref: "User" },
@@ -18,4 +19,4 @@ const User = mongoose.model(
   })
 );
 
-module.exports = User;
+module.exports = UserProfile;

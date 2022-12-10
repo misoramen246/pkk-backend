@@ -19,6 +19,11 @@ module.exports = function (app) {
 
   // #region user
   router.get("/all", [authJwt.verifyToken], user.getAllUsers);
+  router.get(
+    "/:userId/profile",
+    [authJwt.verifyToken],
+    user.getUserDetailsByUserId
+  );
   // #endregion user
 
   // #region set router prefix

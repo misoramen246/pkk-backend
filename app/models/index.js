@@ -13,6 +13,7 @@ const db = {};
 db.mongoose = mongoose;
 
 db.user = require("./user.model");
+db.userProfile = require("./user_profile.model");
 // #endregion model
 
 module.exports = db;
