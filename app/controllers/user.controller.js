@@ -7,7 +7,10 @@ const User = db.user;
 const UserProfile = db.userProfile;
 // file
 const { wrapAsync, ExpressError } = require("../helper/errorHandler.helper");
-const { genNewRunningNumber } = require("../helper/general.helper");
+const {
+  genNewRunningNumber,
+  getUserBalanceByUserId,
+} = require("../helper/general.helper");
 // #endregion import
 
 /**
@@ -73,6 +76,7 @@ exports.getUserDetailsByUserId = wrapAsync(async (req, res) => {
     phoneNumber: null,
     email: null,
     address: null,
+    balance: 0,
   };
   // #endregion variables
 
@@ -94,6 +98,10 @@ exports.getUserDetailsByUserId = wrapAsync(async (req, res) => {
   }
   result.email = user?.email ?? null;
   // #endregion map result
+
+  // #region get user balance
+  result.balance = await getUserBalanceByUserId(reqUserId);
+  // #endregion get user balance
 
   res.send(result);
 });
