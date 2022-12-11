@@ -91,6 +91,14 @@ exports.getTopUpHistoryByUserId = wrapAsync(async (req, res) => {
   const start = (page - 1) * limit;
   // #endregion pagination
 
+  // #region check if user exist
+  const user = await User.findOne({
+    _id: userId,
+    deleted: false,
+  });
+  if (!user) throw new ExpressError(404, "User not found");
+  // #endregion check if user exist
+
   // #region get top up histories
   const topUpHistories = await TopUpHistory.find({
     user_id: userId,
