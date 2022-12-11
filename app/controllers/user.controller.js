@@ -206,6 +206,19 @@ exports.editUserDetailsByUserIdAndFieldToUpdate = wrapAsync(
   }
 );
 
+/**
+ * Created on Sun Dec 11 2022
+ *
+ * Function for validate body
+ *
+ * use express validator
+ *
+ * @param method
+ * @return validation results
+ * @throws ..
+ * @todo ..
+ * @author Miso Ramen
+ */
 exports.validate = (method) => {
   switch (method) {
     case "editUserDetails": {
