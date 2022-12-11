@@ -1,10 +1,10 @@
 // #region import
 // library/framework
+const { DateTime } = require("luxon");
 const mongoose = require("mongoose");
 const db = require("../models");
 const TopUpHistory = db.topUpHistory;
 // file
-const { wrapAsync, ExpressError } = require("../helper/errorHandler.helper");
 // #endregion import
 
 /**
@@ -78,4 +78,51 @@ exports.getUserBalanceByUserId = async (userId) => {
   // #endregion calculate balance
 
   return balance;
+};
+
+/**
+ * Created on Sun Dec 11 2022
+ *
+ * Function for converting running number
+ *
+ * Convert run number to string
+ * Add 9 digits of 0 in front of the run number
+ * Get last 10 digits
+ * Return all runNumber if runNumber length more than 10
+ *
+ * @param runNumber
+ * @return result
+ * @throws ..
+ * @todo ..
+ * @author Miso Ramen
+ */
+exports.convertRunningNumber = (runNumber) => {
+  // #region variables
+  let result = "-";
+  runNumber = runNumber.toString();
+  // #endregion variables
+
+  // #region convert
+  result = ("000000000" + runNumber).slice(-10);
+  if (runNumber.length > 10) result = runNumber;
+  // #endregion convert
+
+  return result;
+};
+
+/**
+ * Created on Sun Dec 11 2022
+ *
+ * Function for converting timestamp to iso
+ *
+ * Using luxon library
+ *
+ * @param timestamp
+ * @return converted time stamp
+ * @throws ..
+ * @todo ..
+ * @author Miso Ramen
+ */
+exports.convertTimestamp = (timestamp) => {
+  return DateTime.fromSeconds(timestamp, { zone: "Asia/Jakarta" }).toISO();
 };

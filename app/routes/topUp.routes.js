@@ -23,6 +23,11 @@ module.exports = function (app) {
     [authJwt.verifyToken, topUp.validate("doTopUp")],
     topUp.doTopUp
   );
+  router.get(
+    "/:userId/histories/page/:page/limit/:limit",
+    [authJwt.verifyToken],
+    topUp.getTopUpHistoryByUserId
+  );
   // #endregion top up
 
   // #region set router prefix
