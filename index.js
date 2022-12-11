@@ -51,6 +51,7 @@ app.get("/", (req, res) => {
 require("./app/routes/auth.routes")(app);
 require("./app/routes/user.routes")(app);
 require("./app/routes/topUp.routes")(app);
+require("./app/routes/payment.routes")(app);
 // #endregion routes
 
 // #region error handler

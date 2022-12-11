@@ -15,6 +15,8 @@ db.mongoose = mongoose;
 db.user = require("./user.model");
 db.userProfile = require("./user_profile.model");
 db.topUpHistory = require("./top_up_history.model");
+db.trashPaymentHistory = require("./trash_payment_history.model");
+db.securityPaymentHistory = require("./security_payment_history.model");
 // #endregion model
 
 module.exports = db;

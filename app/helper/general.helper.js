@@ -4,6 +4,8 @@ const { DateTime } = require("luxon");
 const mongoose = require("mongoose");
 const db = require("../models");
 const TopUpHistory = db.topUpHistory;
+const TrashPaymentHistory = db.trashPaymentHistory;
+const SecurityPaymentHistory = db.securityPaymentHistory;
 // file
 // #endregion import
 
@@ -48,6 +50,8 @@ exports.getUserBalanceByUserId = async (userId) => {
   // #region variables
   let balance = 0;
   let topUp = 0;
+  let trashPayment = 0;
+  let securityPayment = 0;
   // #endregion variables
 
   // #region get succeed top up nominal
@@ -73,8 +77,56 @@ exports.getUserBalanceByUserId = async (userId) => {
   if (topUpHistories.length) topUp = topUpHistories[0].total;
   // #endregion get succeed top up nominal
 
+  // #region get succeed trash payment nominal
+  const trashPaymentHistories = await TrashPaymentHistory.aggregate([
+    {
+      $match: {
+        $and: [
+          { user_id: new mongoose.Types.ObjectId(userId) },
+          { deleted: false },
+        ],
+      },
+    },
+    {
+      $group: {
+        _id: "$user_id",
+        total: {
+          $sum: "$nominal",
+        },
+      },
+    },
+  ]);
+  if (trashPaymentHistories.length) {
+    trashPayment = trashPaymentHistories[0].total;
+  }
+  // #endregion get succeed trash payment nominal
+
+  // #region get succeed security payment nominal
+  const securityPaymentHistories = await SecurityPaymentHistory.aggregate([
+    {
+      $match: {
+        $and: [
+          { user_id: new mongoose.Types.ObjectId(userId) },
+          { deleted: false },
+        ],
+      },
+    },
+    {
+      $group: {
+        _id: "$user_id",
+        total: {
+          $sum: "$nominal",
+        },
+      },
+    },
+  ]);
+  if (securityPaymentHistories.length) {
+    securityPayment = securityPaymentHistories[0].total;
+  }
+  // #endregion get succeed security payment nominal
+
   // #region calculate balance
-  balance = topUp;
+  balance = topUp - trashPayment - securityPayment;
   // #endregion calculate balance
 
   return balance;
