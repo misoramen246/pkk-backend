@@ -59,6 +59,17 @@ exports.doPayment = wrapAsync(async (req, res) => {
       : SecurityPaymentHistory;
   // #endregion create conditional for table
 
+  // #region check if period paid
+  const periodPaid = await impactedTable.findOne({
+    user_id: userId,
+    period,
+    deleted: false,
+  });
+  if (periodPaid) {
+    throw new ExpressError(400, "This period paid");
+  }
+  // #endregion check if period paid
+
   // #region create top up history
   const trashPaymentHistory = new impactedTable({
     transaction_code: await genNewRunningNumber(
@@ -68,7 +79,6 @@ exports.doPayment = wrapAsync(async (req, res) => {
     user_id: userId,
     period,
     nominal,
-    status: true,
     created_by: userId,
     created_on: now,
   });

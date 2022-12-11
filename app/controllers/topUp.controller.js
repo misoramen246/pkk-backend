@@ -142,8 +142,8 @@ exports.getTopUpHistoryByUserId = wrapAsync(async (req, res) => {
   res.send({
     paginationInfo: {
       totalRecord,
-      currentPage: page,
-      currentLimit: limit,
+      currentPage: Number(page),
+      currentLimit: Number(limit),
       thisPageTotalRecord: topUpHistories.length,
       thisPageStartNo: (page - 1) * limit + 1,
       thisPageEndNo: (page - 1) * limit + topUpHistories.length,
