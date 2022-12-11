@@ -3,7 +3,6 @@ const mongoose = require("mongoose");
 const UserProfile = mongoose.model(
   "User Profile",
   new mongoose.Schema({
-    user_id: { type: mongoose.Types.ObjectId, ref: "User" },
     subscription_code: Number,
     name: String,
     phone_number: String,

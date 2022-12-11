@@ -20,10 +20,10 @@ module.exports = function (app) {
   // #region authentication
   router.post(
     "/signup",
-    [verifySignUp.checkDuplicateUsernameOrEmail],
+    [verifySignUp.checkDuplicateUsernameOrEmail, auth.validate("signup")],
     auth.signup
   );
-  router.post("/signin", auth.signin);
+  router.post("/signin", [auth.validate("signin")], auth.signin);
   // #endregion authentication
 
   // #region set router prefix

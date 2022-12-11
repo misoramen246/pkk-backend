@@ -1,5 +1,6 @@
 // #region import
 // library/framework
+const { body, validationResult } = require("express-validator");
 var jwt = require("jsonwebtoken");
 var bcrypt = require("bcryptjs");
 // file
@@ -14,6 +15,7 @@ const User = db.user;
  *
  * Function for sign up
  *
+ * Validate body
  * Create user object, has password
  * Save it to DB
  *
@@ -27,6 +29,15 @@ exports.signup = wrapAsync(async (req, res) => {
   // #region variables
   const { username, email, password } = req.body;
   // #endregion variables
+
+  // #region validate body
+  const valErrors = validationResult(req);
+  if (!valErrors.isEmpty()) {
+    return res.status(400).send({
+      errors: valErrors.array(),
+    });
+  }
+  // #endregion validate body
 
   // #region create the user object
   const user = new User({
@@ -70,6 +81,15 @@ exports.signin = wrapAsync(async (req, res) => {
   });
   // #endregion find user
 
+  // #region validate body
+  const valErrors = validationResult(req);
+  if (!valErrors.isEmpty()) {
+    return res.status(400).send({
+      errors: valErrors.array(),
+    });
+  }
+  // #endregion validate body
+
   // #region throw error if user not found
   if (!user) {
     throw new ExpressError(404, "User not found!");
@@ -103,3 +123,61 @@ exports.signin = wrapAsync(async (req, res) => {
     accessToken: token,
   });
 });
+
+/**
+ * Created on Sun Dec 11 2022
+ *
+ * Function for validate body
+ *
+ * use express validator
+ *
+ * @param method
+ * @return validation results
+ * @throws ..
+ * @todo ..
+ * @author Miso Ramen
+ */
+exports.validate = (method) => {
+  switch (method) {
+    case "signup": {
+      return [
+        body("username")
+          .notEmpty({ ignore_whitespace: true })
+          .withMessage("Required")
+          .if(body("username").exists())
+          .isLength({ max: 255 })
+          .withMessage("Max 255 characters"),
+        body("email")
+          .notEmpty({ ignore_whitespace: true })
+          .withMessage("Required")
+          .if(body("email").exists())
+          .isEmail()
+          .withMessage("Invalid email format")
+          .isLength({ max: 255 })
+          .withMessage("Max 255 characters"),
+        body("password")
+          .notEmpty({ ignore_whitespace: true })
+          .withMessage("Required")
+          .if(body("password").exists())
+          .isLength({ max: 255 })
+          .withMessage("Max 255 characters"),
+      ];
+    }
+    case "signin": {
+      return [
+        body("username")
+          .notEmpty({ ignore_whitespace: true })
+          .withMessage("Required")
+          .if(body("username").exists())
+          .isLength({ max: 255 })
+          .withMessage("Max 255 characters"),
+        body("password")
+          .notEmpty({ ignore_whitespace: true })
+          .withMessage("Required")
+          .if(body("password").exists())
+          .isLength({ max: 255 })
+          .withMessage("Max 255 characters"),
+      ];
+    }
+  }
+};

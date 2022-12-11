@@ -19,11 +19,15 @@ module.exports = function (app) {
 
   // #region user
   router.get("/all", [authJwt.verifyToken], user.getAllUsers);
-  router.get(
-    "/:userId/profile",
-    [authJwt.verifyToken],
-    user.getUserDetailsByUserId
-  );
+  router
+    .route("/:userId/profile")
+    .get([authJwt.verifyToken], user.getUserDetailsByUserId);
+  router
+    .route("/:userId/profile/:fieldToUpdate")
+    .put(
+      [authJwt.verifyToken, user.validate("editUserDetails")],
+      user.editUserDetailsByUserIdAndFieldToUpdate
+    );
   // #endregion user
 
   // #region set router prefix
