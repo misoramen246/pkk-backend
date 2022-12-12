@@ -10,6 +10,7 @@ const { wrapAsync, ExpressError } = require("../helper/errorHandler.helper");
 const {
   genNewRunningNumber,
   getUserBalanceByUserId,
+  convertRunningNumber,
 } = require("../helper/general.helper");
 // #endregion import
 
@@ -77,6 +78,7 @@ exports.getUserDetailsByUserId = wrapAsync(async (req, res) => {
     email: null,
     address: null,
     balance: 0,
+    subscriptionCode: null,
   };
   // #endregion variables
 
@@ -95,6 +97,9 @@ exports.getUserDetailsByUserId = wrapAsync(async (req, res) => {
     result.name = user?.user_profile?.name ?? null;
     result.phoneNumber = user?.user_profile?.phone_number ?? null;
     result.address = user?.user_profile?.address ?? null;
+    result.subscriptionCode = convertRunningNumber(
+      user?.user_profile?.subscription_code
+    );
   }
   result.email = user?.email ?? null;
   // #endregion map result
