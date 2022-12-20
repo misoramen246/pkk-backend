@@ -1,5 +1,6 @@
 // #region import
 // library/framework
+const mongoose = require("mongoose");
 const { body, param, validationResult } = require("express-validator");
 const db = require("../models");
 const User = db.user;
@@ -85,6 +86,7 @@ exports.doTopUp = wrapAsync(async (req, res) => {
 exports.getTopUpHistoryByUserId = wrapAsync(async (req, res) => {
   // #region variables
   const { userId, page, limit } = req.params;
+  let finalTopUpHistories = [];
   // #endregion variables
 
   // #region pagination
@@ -100,34 +102,84 @@ exports.getTopUpHistoryByUserId = wrapAsync(async (req, res) => {
   // #endregion check if user exist
 
   // #region get top up histories
-  const topUpHistories = await TopUpHistory.find({
-    user_id: userId,
-    deleted: false,
-  })
-    .sort({ created_on: -1 })
-    .skip(start)
-    .limit(limit)
-    .then(async (results) => {
-      return await Promise.all(
-        results.map(async (result) => {
-          const user = await User.findOne({
-            _id: result.user_id,
-            deleted: false,
-          }).populate("user_profile");
+  const topUpHistories = await TopUpHistory.aggregate([
+    {
+      $match: {
+        user_id: mongoose.Types.ObjectId(userId),
+        deleted: false,
+      },
+    },
+    {
+      $addFields: {
+        historyType: "Top Up History",
+      },
+    },
+    {
+      $unionWith: {
+        coll: "trash payment histories",
+        pipeline: [
+          {
+            $match: {
+              user_id: mongoose.Types.ObjectId(userId),
+              deleted: false,
+            },
+          },
+          {
+            $addFields: {
+              historyType: "Trash Payment History",
+            },
+          },
+        ],
+      },
+    },
+    {
+      $unionWith: {
+        coll: "security payment histories",
+        pipeline: [
+          {
+            $match: {
+              user_id: mongoose.Types.ObjectId(userId),
+              deleted: false,
+            },
+          },
+          {
+            $addFields: {
+              historyType: "Security Payment History",
+            },
+          },
+        ],
+      },
+    },
+    {
+      $facet: {
+        data: [{ $skip: Number(start) }, { $limit: Number(limit) }], // add projection here wish you re-shape the docs
+      },
+    },
+  ]);
 
-          return {
-            name: user?.user_profile?.name ?? "-",
-            phoneNumber: user?.user_profile?.phone_number ?? "-",
-            status: result?.status ? "Berhasil" : "Gagal",
-            transactionTime: convertTimestamp(result.created_on),
-            transactionCode: convertRunningNumber(result.transaction_code),
-            nominal: result.top_up_nominal,
-            paymentMethod: result.payment_method,
-          };
-        })
-      );
+  for (let data of topUpHistories[0].data) {
+    const user = await User.findOne({
+      _id: data.user_id,
+      deleted: false,
+    }).populate("user_profile");
+    const isTopUpHistory = data?.historyType === "Top Up History";
+
+    finalTopUpHistories.push({
+      name: user?.user_profile?.name ?? "-",
+      phoneNumber: user?.user_profile?.phone_number ?? "-",
+      status: isTopUpHistory
+        ? data?.status
+          ? "Berhasil"
+          : "Gagal"
+        : "Berhasil",
+      transactionTime: convertTimestamp(data.created_on),
+      transactionCode: convertRunningNumber(data.transaction_code),
+      nominal: isTopUpHistory ? data?.top_up_nominal : data?.nominal,
+      paymentMethod: isTopUpHistory ? data?.payment_method : null,
+      historyType: data.historyType,
     });
-  if (!topUpHistories.length) {
+  }
+  if (!finalTopUpHistories.length) {
     throw new ExpressError(404, "Not found");
   }
   // #endregion get top up histories
@@ -144,11 +196,11 @@ exports.getTopUpHistoryByUserId = wrapAsync(async (req, res) => {
       totalRecord,
       currentPage: Number(page),
       currentLimit: Number(limit),
-      thisPageTotalRecord: topUpHistories.length,
+      thisPageTotalRecord: finalTopUpHistories.length,
       thisPageStartNo: (page - 1) * limit + 1,
-      thisPageEndNo: (page - 1) * limit + topUpHistories.length,
+      thisPageEndNo: (page - 1) * limit + finalTopUpHistories.length,
     },
-    topUpHistories,
+    finalTopUpHistories,
   });
 });
 
